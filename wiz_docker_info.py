@@ -36,7 +36,7 @@ def dnetwork(conname):
     Net_ip = Net_data['IPAddress']
     Net_type = list(Net_data['Networks'])[0]
     print('运行的网络段名为:', Net_type)
-    # print('当前容器IP:',Net_ip)
+    print('当前容器IP:',Net_ip)
     # print(Net_port)
 
     Expose_port = list(Net_port)
