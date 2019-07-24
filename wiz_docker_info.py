@@ -26,17 +26,19 @@ def dmount(conname):
             print('mount挂载类型:', i['Type'])
             print('挂载源目录[外]:', i['Source'])
             print('挂载目标目录[内]:', i['Destination'])
-            print('挂载目录允许权限:', i['Mode'])
+            print('挂载目录允许权限(空为默认rw):', i['Mode'])
 
 
 def dnetwork(conname):
     Inspect_net = os.popen("docker inspect --format='{{json .NetworkSettings}}' %s" % conname)
     Net_data = json.loads(Inspect_net.read())
     Net_port = Net_data['Ports']
-    Net_ip = Net_data['IPAddress']
-    Net_type = list(Net_data['Networks'])[0]
-    print('运行的网络段名为:', Net_type)
+    Net_name = list(Net_data['Networks'])[0]
+    Net_ip = Net_data['Networks'][Net_name]['IPAddress']
+    Net_type = os.popen(" docker network ls|grep %s |awk '{print $3}' " % Net_name).read()
+    print('运行的网络段名为:', Net_name)
     print('当前容器IP:',Net_ip)
+    print('当前容器网络类型为: ',Net_type)
     # print(Net_port)
 
     Expose_port = list(Net_port)
@@ -62,9 +64,9 @@ def dconfig(conname):
 
 def info(conname):
     name = '当前查询容器为: %s' % conname
-    print('+' + '-' * 37 + '+')
-    print('|' + name.center(30) + '|')
-    print('+' + '-' * 37 + '+')
+    print('+' + '-' * (len(conname)+23) + '+')
+    print('|' + name.center(len(conname)+16) + '|')
+    print('+' + '-' * (len(conname)+23) + '+')
     print(' 1)查询容器运行状态         ')
     print(' 2)查询容器目录挂载状态      ')
     print(' 3)查询容器镜像和CMD        ')
@@ -74,39 +76,45 @@ def info(conname):
 
 
 while True:
-    os.system('clear')
-    data = os.popen('''docker ps | awk 'NR>1{print "容器ID: "$1,"容器端口映射: "$(NF-1),"容器名: "$NF}'|rev|column -t |rev''').read()
-    print('当前运行容器有\n%s' % data)
-    conname = str(input('请输入你要查询的容器ID或容器名(退出请输入n):'))
-    if conname == 'n' :
+
+    try:
+        os.system('clear')
+        data = os.popen('''docker ps |awk 'BEGIN{print "容器ID 容器映射端口情况  容器名"} NR>1{print $1,$(NF-1),$NF}'|column -t''').read()
+        print('当前运行容器有\n%s' % data)
+        conname = str(input('请输入你要查询的容器ID或容器名(退出请输入n):'))
+        if conname == 'n' :
+            break
+        elif not conname :
+            print('未输入,请重新输入。')
+        elif conname not in data :
+            print('容器不存在,请重新输入。')
+        else:
+            while True:
+                info(conname)
+                num = str(input('请输入你的选择:'))
+                if num == '1':
+                    os.system('clear')
+                    print("容器运行状态查询结果:\n")
+                    dState(conname)
+                elif num == '2':
+                    os.system('clear')
+                    print("容器目录挂载状态查询结果:\n")
+                    dmount(conname)
+                elif num == '3':
+                    os.system('clear')
+                    print("容器镜像和CMD查询结果为:\n")
+                    dconfig(conname)
+                elif num == '4':
+                    os.system('clear')
+                    print("容器网络情况查询结果为:\n")
+                    dnetwork(conname)
+                elif num == 'q' or num == 'n':
+                    break
+                else:
+                    print('\n输入有误,请重新输入\n')
+    except BaseException :
+        print('容器名输入错误已退出')
         break
-    elif not conname :
-        print('未输入,请重新输入。')
-    elif conname not in data :
-        print('容器不存在,请重新输入。')
-    else:
-        while True:
-            info(conname)
-            num = str(input('请输入你的选择:'))
-            if num == '1':
-                os.system('clear')
-                print("容器运行状态查询结果:\n")
-                dState(conname)
-            elif num == '2':
-                os.system('clear')
-                print("容器目录挂载状态查询结果:\n")
-                dmount(conname)
-            elif num == '3':
-                os.system('clear')
-                print("容器镜像和CMD查询结果为:\n")
-                dconfig(conname)
-            elif num == '4':
-                os.system('clear')
-                print("容器网络情况查询结果为:\n")
-                dnetwork(conname)
-            elif num == 'q' or num == 'n':
-                break
-            else:
-                print('\n输入有误,请重新输入\n')
+
     if num == 'q':
         break
