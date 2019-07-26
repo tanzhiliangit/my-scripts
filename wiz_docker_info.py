@@ -34,7 +34,10 @@ def dnetwork(conname):
     Net_data = json.loads(Inspect_net.read())
     Net_port = Net_data['Ports']
     Net_name = list(Net_data['Networks'])[0]
-    Net_ip = Net_data['Networks'][Net_name]['IPAddress']
+    if Net_name == 'host' :
+        Net_ip = 'localhost'
+    else:
+        Net_ip = Net_data['Networks'][Net_name]['IPAddress']
     Net_type = os.popen(" docker network ls|grep %s |awk '{print $3}' " % Net_name).read()
     print('运行的网络段名为:', Net_name)
     print('当前容器IP:',Net_ip)
