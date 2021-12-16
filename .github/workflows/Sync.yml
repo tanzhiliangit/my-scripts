@@ -7,10 +7,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Sync Github Repos To Gitee  # 名字随便起
-      uses: Yikun/hub-mirror-action@v1.1  # 使用Yikun/hub-mirror-action
+      uses: pixta-dev/repository-mirroring-action@v1  # 使用Yikun/hub-mirror-action
       env:
         SSH_PRIVATE_KEY: ${{ secrets.GITEE_PRIVATE_KEY }}  # SSH密钥对中的私钥
       with:
-        source-repo: "git@github.com:tanzhiliangit/my-scripts.git"
-        destination-repo: "git@gitee.com:tanzhilian/my-scripts.git"
+        target_repo_url: git@gitee.com:tanzhilian/my-scripts.git
+        ssh_private_key: ${{ secrets.GITEE_PRIVATE_KEY }}
+              # source-repo: "git@github.com:tanzhiliangit/my-scripts.git"
+              # destination-repo: "git@gitee.com:tanzhilian/my-scripts.git"
 
